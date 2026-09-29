@@ -1,0 +1,6 @@
+.header {
+  height: 72px;
+
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}

@@ -1,0 +1,23 @@
+.app-layout {
+  display: flex;
+
+  width: 100%;
+  min-height: 100vh;
+
+  align-items: stretch;
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-content {
+  padding: 28px;
+}
+
+.page-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
