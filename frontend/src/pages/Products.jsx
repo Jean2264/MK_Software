@@ -1,12 +1,17 @@
 import { useState, useEffect } from "react";
+import * as productService from "../services/product.service.js";
+
 import SearchBar from "../components/SearchBar";
 import DataTable from "../components/DataTable";
 import Pagination from "../components/Pagination";
 import ProductModal from "../components/Modal/ProductModal";
+
 import "./Products.css";
+
 function Products() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [products, setProducts] = useState([]);
 
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
 
@@ -17,54 +22,43 @@ function Products() {
   const handleCloseProductModal = () => {
     setIsProductModalOpen(false);
   };
-  const products = [
-    {
-      id: 1,
-      code: "P001",
-      name: "Coca-Cola 500ml",
-      price: 1200,
-      stock: 24,
-      category: "Bebidas",
-    },
-    {
-      id: 2,
-      code: "P002",
-      name: "Alfajor Jorgito",
-      price: 800,
-      stock: 15,
-      category: "Golosinas",
-    },
-    {
-      id: 3,
-      code: "P003",
-      name: "Papas Lays",
-      price: 1800,
-      stock: 8,
-      category: "Snacks",
-    },
-  ];
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const response = await productService.getProducts();
+
+        setProducts(response.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    loadProducts();
+  }, []);
 
   const columns = [
     {
       header: "Código",
-      accessor: "code",
+      accessor: "codigo_producto",
     },
     {
       header: "Producto",
-      accessor: "name",
+      accessor: "nombre",
     },
     {
       header: "Precio",
-      accessor: "price",
-      render: (product) => `$${product.price.toLocaleString("es-AR")}`,
-    },
-    {
-      header: "Stock",
-      accessor: "stock",
+      accessor: "precio_minorista",
+      render: (product) =>
+        `$${Number(product.precio_minorista).toLocaleString("es-AR")}`,
     },
     {
       header: "Categoría",
-      accessor: "category",
+      accessor: "nombre_categoria",
+    },
+    {
+      header: "Subcategoría",
+      accessor: "nombre_subcategoria",
     },
     {
       header: "Acciones",
@@ -111,6 +105,7 @@ function Products() {
           <span>Agregar producto</span>
         </button>
       </div>
+
       <div className="products-toolbar">
         <SearchBar
           value={search}
@@ -119,6 +114,11 @@ function Products() {
           onSearch={handleSearch}
         />
       </div>
+
+      <DataTable columns={columns} data={products} rowKey="id_producto" />
+
+      <Pagination page={page} totalPages={1} onPageChange={setPage} />
+
       <ProductModal
         isOpen={isProductModalOpen}
         onClose={handleCloseProductModal}

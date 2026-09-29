@@ -1,9 +1,11 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import * as productService from "../../services/product.service.js";
 
 import "./ProductModal.css";
 
 function ProductModal({ isOpen, onClose, mode = "create" }) {
   const [image, setImage] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
 
   const fileInputRef = useRef(null);
 
@@ -26,6 +28,8 @@ function ProductModal({ isOpen, onClose, mode = "create" }) {
       return;
     }
 
+    setImageFile(file);
+
     const reader = new FileReader();
 
     reader.onload = () => {
@@ -41,9 +45,52 @@ function ProductModal({ isOpen, onClose, mode = "create" }) {
 
   const handleRemoveImage = () => {
     setImage(null);
+    setImageFile(null);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData();
+
+    formData.append("nombre", document.getElementById("product-name").value);
+
+    formData.append(
+      "codigoBarras",
+      document.getElementById("product-barcode").value,
+    );
+
+    formData.append(
+      "precioMinorista",
+      document.getElementById("product-retail-price").value,
+    );
+
+    formData.append(
+      "precioMayorista",
+      document.getElementById("product-wholesale-price").value || "",
+    );
+
+    formData.append(
+      "cantidadMinMayorista",
+      document.getElementById("product-wholesale-min").value,
+    );
+
+    if (imageFile) {
+      formData.append("imagen", imageFile);
+    }
+
+    try {
+      const newProduct = await productService.createProduct(formData);
+
+      console.log("Producto creado:", newProduct);
+
+      onClose();
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -64,7 +111,11 @@ function ProductModal({ isOpen, onClose, mode = "create" }) {
         </header>
 
         <div className="product-modal-content">
-          <form className="product-modal-form">
+          <form
+            id="product-form"
+            className="product-modal-form"
+            onSubmit={handleSubmit}
+          >
             <div className="product-modal-image-container">
               {image ? (
                 <div className="product-image-preview-container">
@@ -222,7 +273,11 @@ function ProductModal({ isOpen, onClose, mode = "create" }) {
               Cancelar
             </button>
 
-            <button type="button" className="product-modal-save">
+            <button
+              type="submit"
+              form="product-form"
+              className="product-modal-save"
+            >
               Guardar producto
             </button>
           </footer>
