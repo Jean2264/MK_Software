@@ -1,0 +1,456 @@
+.category-modal-overlay {
+  position: fixed;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background: rgba(23, 32, 51, 0.45);
+
+  z-index: 1100;
+}
+
+/* =========================================
+   MODAL
+========================================= */
+
+.category-modal {
+  width: 100%;
+  max-width: 760px;
+  max-height: 90vh;
+
+  display: flex;
+  flex-direction: column;
+
+  background: var(--color-surface);
+
+  border-radius: var(--radius-lg);
+
+  box-shadow: 0 20px 50px rgba(23, 32, 51, 0.18);
+
+  overflow: hidden;
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.category-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 20px 24px;
+
+  border-bottom: 1px solid var(--color-border);
+}
+
+.category-modal-title {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.category-modal-title-icon {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: var(--radius-md);
+
+  background: var(--color-primary-light);
+
+  color: var(--color-primary);
+
+  font-size: 19px;
+}
+
+.category-modal-title h2 {
+  color: var(--color-text);
+
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.category-modal-title p {
+  margin-top: 3px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+}
+
+/* =========================================
+   CLOSE
+========================================= */
+
+.category-modal-close {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: var(--radius-sm);
+
+  background: transparent;
+
+  color: var(--color-text-secondary);
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.category-modal-close:hover {
+  background: var(--color-primary-light);
+
+  color: var(--color-primary);
+}
+
+/* =========================================
+   TABS
+========================================= */
+
+.category-modal-tabs {
+  display: flex;
+
+  padding: 0 24px;
+
+  border-bottom: 1px solid var(--color-border);
+}
+
+.category-modal-tab {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  height: 50px;
+
+  padding: 0 16px;
+
+  background: transparent;
+
+  color: var(--color-text-secondary);
+
+  font-size: 14px;
+  font-weight: 600;
+
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.category-modal-tab:hover {
+  color: var(--color-primary);
+}
+
+.category-modal-tab.active {
+  color: var(--color-primary);
+}
+
+.category-modal-tab.active::after {
+  content: "";
+
+  position: absolute;
+
+  left: 12px;
+  right: 12px;
+  bottom: -1px;
+
+  height: 2px;
+
+  background: var(--color-primary);
+
+  border-radius: 2px 2px 0 0;
+}
+
+.category-modal-tab i {
+  font-size: 16px;
+}
+
+.category-tab-count {
+  min-width: 22px;
+  height: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 6px;
+
+  border-radius: 20px;
+
+  background: var(--color-background);
+
+  color: var(--color-text-secondary);
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.category-modal-tab.active .category-tab-count {
+  background: var(--color-primary-light);
+
+  color: var(--color-primary);
+}
+
+/* =========================================
+   CONTENT
+========================================= */
+
+.category-modal-content {
+  flex: 1;
+
+  padding: 24px;
+
+  overflow-y: auto;
+}
+
+.category-section {
+  display: flex;
+  flex-direction: column;
+
+  gap: 18px;
+}
+
+/* =========================================
+   SECTION HEADER
+========================================= */
+
+.category-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+.category-section-header h3 {
+  color: var(--color-text);
+
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.category-section-header p {
+  margin-top: 4px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 13px;
+}
+
+/* =========================================
+   ADD BUTTON
+========================================= */
+
+.category-add-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  height: 38px;
+
+  padding: 0 14px;
+
+  flex-shrink: 0;
+
+  border-radius: var(--radius-sm);
+
+  background: var(--color-primary);
+
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.category-add-button:hover {
+  background: var(--color-primary-dark);
+
+  transform: translateY(-1px);
+}
+
+.category-add-button i {
+  font-size: 15px;
+}
+
+/* =========================================
+   TOOLBAR
+========================================= */
+
+.category-toolbar {
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+}
+
+/*
+   SearchBar ya tiene su propio estilo.
+   Acá solamente hacemos que ocupe todo
+   el ancho disponible.
+*/
+
+.category-toolbar .search-bar {
+  width: 100%;
+}
+
+/* =========================================
+   TABLE
+========================================= */
+
+.category-section .data-table-wrapper {
+  border: 1px solid var(--color-border);
+
+  border-radius: var(--radius-md);
+
+  overflow-x: auto;
+
+  background: var(--color-surface);
+}
+
+.category-section .data-table th {
+  background: var(--color-background);
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.03em;
+}
+
+.category-section .data-table td {
+  color: var(--color-text);
+
+  font-size: 14px;
+}
+
+.category-section .data-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.category-section .data-table tbody tr:hover {
+  background: #fafbff;
+}
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.category-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+}
+
+.category-action-button {
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: var(--radius-sm);
+
+  background: transparent;
+
+  color: var(--color-text-secondary);
+
+  font-size: 15px;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.category-action-button:hover {
+  background: var(--color-primary-light);
+
+  color: var(--color-primary);
+}
+
+.category-action-button.category-action-danger:hover {
+  background: #fee2e2;
+
+  color: var(--color-danger);
+}
+
+/* =========================================
+   PAGINATION
+========================================= */
+
+.category-section .pagination {
+  margin-top: 0;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 600px) {
+  .category-modal-overlay {
+    padding: 12px;
+  }
+
+  .category-modal {
+    max-height: 94vh;
+  }
+
+  .category-modal-header {
+    padding: 18px;
+  }
+
+  .category-modal-content {
+    padding: 18px;
+  }
+
+  .category-modal-tabs {
+    padding: 0 18px;
+  }
+
+  .category-modal-tab {
+    padding: 0 12px;
+  }
+
+  .category-section-header {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+  .category-add-button {
+    width: 100%;
+  }
+
+  .category-modal-title h2 {
+    font-size: 16px;
+  }
+
+  .category-modal-title p {
+    font-size: 11px;
+  }
+}

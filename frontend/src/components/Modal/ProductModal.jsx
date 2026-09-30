@@ -3,15 +3,17 @@ import * as productService from "../../services/product.service.js";
 
 import "./ProductModal.css";
 
-function ProductModal({ isOpen, onClose, mode = "create" }) {
+function ProductModal({
+  isOpen,
+  onClose,
+  mode = "create",
+  handleProductCreated,
+}) {
   const [image, setImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [status, setStatus] = useState("idle");
 
   const fileInputRef = useRef(null);
-
-  if (!isOpen) {
-    return null;
-  }
 
   const titles = {
     create: "Agregar producto",
@@ -20,6 +22,10 @@ function ProductModal({ isOpen, onClose, mode = "create" }) {
   };
 
   const isViewMode = mode === "view";
+
+  const isLoading = status === "loading";
+  const isSuccess = status === "success";
+  const isError = status === "error";
 
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
@@ -40,10 +46,18 @@ function ProductModal({ isOpen, onClose, mode = "create" }) {
   };
 
   const handleSelectImage = () => {
+    if (isLoading) {
+      return;
+    }
+
     fileInputRef.current?.click();
   };
 
   const handleRemoveImage = () => {
+    if (isLoading) {
+      return;
+    }
+
     setImage(null);
     setImageFile(null);
 
@@ -54,6 +68,12 @@ function ProductModal({ isOpen, onClose, mode = "create" }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (status === "loading") {
+      return;
+    }
+
+    setStatus("loading");
 
     const formData = new FormData();
 
@@ -84,14 +104,89 @@ function ProductModal({ isOpen, onClose, mode = "create" }) {
     }
 
     try {
-      const newProduct = await productService.createProduct(formData);
+      await productService.createProduct(formData);
 
-      console.log("Producto creado:", newProduct);
+      await handleProductCreated();
 
-      onClose();
+      setStatus("success");
     } catch (error) {
       console.error(error);
+
+      setStatus("error");
     }
+  };
+
+  const handleRetry = () => {
+    setStatus("idle");
+  };
+
+  useEffect(() => {
+    if (status !== "success") {
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      onClose();
+    }, 2000);
+
+    return () => clearTimeout(timeout);
+  }, [status, onClose]);
+
+  if (!isOpen) {
+    return null;
+  }
+
+  const renderResult = () => {
+    if (isSuccess) {
+      return (
+        <div className="product-modal-result product-modal-result-success">
+          <div className="product-result-icon">
+            <i className="bi bi-check-lg"></i>
+          </div>
+
+          <h2>
+            {mode === "edit"
+              ? "Producto actualizado correctamente"
+              : "Producto guardado correctamente"}
+          </h2>
+
+          <p>
+            {mode === "edit"
+              ? "Los cambios fueron guardados correctamente."
+              : "El producto fue agregado al catálogo."}
+          </p>
+        </div>
+      );
+    }
+
+    if (isError) {
+      return (
+        <div className="product-modal-result product-modal-result-error">
+          <div className="product-result-icon">
+            <i className="bi bi-exclamation-lg"></i>
+          </div>
+
+          <h2>No se pudo guardar el producto</h2>
+
+          <p>
+            Ocurrió un error al guardar el producto.
+            <br />
+            Por favor, intentá nuevamente.
+          </p>
+
+          <button
+            type="button"
+            className="product-result-retry"
+            onClick={handleRetry}
+          >
+            <i className="bi bi-arrow-clockwise"></i>
+            Intentar nuevamente
+          </button>
+        </div>
+      );
+    }
+
+    return null;
   };
 
   return (
@@ -105,170 +200,186 @@ function ProductModal({ isOpen, onClose, mode = "create" }) {
             className="product-modal-close"
             onClick={onClose}
             aria-label="Cerrar"
+            disabled={isLoading}
           >
             <i className="bi bi-x-lg"></i>
           </button>
         </header>
 
         <div className="product-modal-content">
-          <form
-            id="product-form"
-            className="product-modal-form"
-            onSubmit={handleSubmit}
-          >
-            <div className="product-modal-image-container">
-              {image ? (
-                <div className="product-image-preview-container">
-                  <div className="product-image-preview">
-                    <img src={image} alt="Vista previa del producto" />
+          {isSuccess || isError ? (
+            renderResult()
+          ) : (
+            <form
+              id="product-form"
+              className="product-modal-form"
+              onSubmit={handleSubmit}
+            >
+              <div className="product-modal-image-container">
+                {image ? (
+                  <div className="product-image-preview-container">
+                    <div className="product-image-preview">
+                      <img src={image} alt="Vista previa del producto" />
+
+                      {!isViewMode && (
+                        <button
+                          type="button"
+                          className="product-image-remove"
+                          onClick={handleRemoveImage}
+                          aria-label="Eliminar imagen"
+                          disabled={isLoading}
+                        >
+                          <i className="bi bi-x"></i>
+                        </button>
+                      )}
+                    </div>
 
                     {!isViewMode && (
                       <button
                         type="button"
-                        className="product-image-remove"
-                        onClick={handleRemoveImage}
-                        aria-label="Eliminar imagen"
+                        className="product-image-button"
+                        onClick={handleSelectImage}
+                        disabled={isLoading}
                       >
-                        <i className="bi bi-x"></i>
+                        <i className="bi bi-pencil"></i>
+                        Editar imagen
                       </button>
                     )}
                   </div>
+                ) : (
+                  <div className="product-modal-image-placeholder">
+                    <i className="bi bi-image"></i>
 
-                  {!isViewMode && (
-                    <button
-                      type="button"
-                      className="product-image-button"
-                      onClick={handleSelectImage}
-                    >
-                      <i className="bi bi-pencil"></i>
-                      Editar imagen
-                    </button>
-                  )}
+                    <span>Imagen del producto</span>
+
+                    {!isViewMode && (
+                      <button
+                        type="button"
+                        className="product-image-button"
+                        onClick={handleSelectImage}
+                        disabled={isLoading}
+                      >
+                        <i className="bi bi-plus-lg"></i>
+                        Agregar imagen
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  hidden
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="product-form-grid">
+                <div className="product-form-group">
+                  <label htmlFor="product-code">Código de producto</label>
+
+                  <input
+                    id="product-code"
+                    type="text"
+                    placeholder="Se generará automáticamente"
+                    disabled
+                  />
                 </div>
-              ) : (
-                <div className="product-modal-image-placeholder">
-                  <i className="bi bi-image"></i>
 
-                  <span>Imagen del producto</span>
+                <div className="product-form-group">
+                  <label htmlFor="product-name">Nombre</label>
 
-                  {!isViewMode && (
-                    <button
-                      type="button"
-                      className="product-image-button"
-                      onClick={handleSelectImage}
-                    >
-                      <i className="bi bi-plus-lg"></i>
-                      Agregar imagen
-                    </button>
-                  )}
+                  <input
+                    id="product-name"
+                    type="text"
+                    placeholder="Nombre de producto"
+                    disabled={isViewMode || isLoading}
+                  />
                 </div>
-              )}
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                hidden
-              />
-            </div>
+                <div className="product-form-group">
+                  <label htmlFor="product-barcode">Código de barras</label>
 
-            <div className="product-form-grid">
-              <div className="product-form-group">
-                <label htmlFor="product-code">Código de producto</label>
+                  <input
+                    id="product-barcode"
+                    type="text"
+                    placeholder="Código de barras"
+                    disabled={isViewMode || isLoading}
+                  />
+                </div>
 
-                <input
-                  id="product-code"
-                  type="text"
-                  placeholder="Se generará automáticamente"
-                  disabled
-                />
+                <div className="product-form-group">
+                  <label htmlFor="product-category">Categoría</label>
+
+                  <select
+                    id="product-category"
+                    disabled={isViewMode || isLoading}
+                  >
+                    <option value="">Seleccionar categoría</option>
+                  </select>
+                </div>
+
+                <div className="product-form-group">
+                  <label htmlFor="product-subcategory">Subcategoría</label>
+
+                  <select
+                    id="product-subcategory"
+                    disabled={isViewMode || isLoading}
+                  >
+                    <option value="">Seleccionar subcategoría</option>
+                  </select>
+                </div>
+
+                <div className="product-form-group">
+                  <label htmlFor="product-retail-price">Precio minorista</label>
+
+                  <input
+                    id="product-retail-price"
+                    type="number"
+                    placeholder="0,00"
+                    disabled={isViewMode || isLoading}
+                  />
+                </div>
+
+                <div className="product-form-group">
+                  <label htmlFor="product-wholesale-price">
+                    Precio mayorista
+                  </label>
+
+                  <input
+                    id="product-wholesale-price"
+                    type="number"
+                    placeholder="Opcional"
+                    disabled={isViewMode || isLoading}
+                  />
+                </div>
+
+                <div className="product-form-group">
+                  <label htmlFor="product-wholesale-min">
+                    Cantidad mínima mayorista
+                  </label>
+
+                  <input
+                    id="product-wholesale-min"
+                    type="number"
+                    placeholder="Opcional"
+                    disabled={isViewMode || isLoading}
+                  />
+                </div>
               </div>
-
-              <div className="product-form-group">
-                <label htmlFor="product-name">Nombre</label>
-
-                <input
-                  id="product-name"
-                  type="text"
-                  placeholder="Nombre de producto"
-                  disabled={isViewMode}
-                />
-              </div>
-
-              <div className="product-form-group">
-                <label htmlFor="product-barcode">Código de barras</label>
-
-                <input
-                  id="product-barcode"
-                  type="text"
-                  placeholder="Código de barras"
-                  disabled={isViewMode}
-                />
-              </div>
-
-              <div className="product-form-group">
-                <label htmlFor="product-category">Categoría</label>
-
-                <select id="product-category" disabled={isViewMode}>
-                  <option value="">Seleccionar categoría</option>
-                </select>
-              </div>
-
-              <div className="product-form-group">
-                <label htmlFor="product-subcategory">Subcategoría</label>
-
-                <select id="product-subcategory" disabled={isViewMode}>
-                  <option value="">Seleccionar subcategoría</option>
-                </select>
-              </div>
-
-              <div className="product-form-group">
-                <label htmlFor="product-retail-price">Precio minorista</label>
-
-                <input
-                  id="product-retail-price"
-                  type="number"
-                  placeholder="0,00"
-                  disabled={isViewMode}
-                />
-              </div>
-
-              <div className="product-form-group">
-                <label htmlFor="product-wholesale-price">
-                  Precio mayorista
-                </label>
-
-                <input
-                  id="product-wholesale-price"
-                  type="number"
-                  placeholder="Opcional"
-                  disabled={isViewMode}
-                />
-              </div>
-
-              <div className="product-form-group">
-                <label htmlFor="product-wholesale-min">
-                  Cantidad mínima mayorista
-                </label>
-
-                <input
-                  id="product-wholesale-min"
-                  type="number"
-                  placeholder="Opcional"
-                  disabled={isViewMode}
-                />
-              </div>
-            </div>
-          </form>
+            </form>
+          )}
         </div>
 
-        {!isViewMode && (
+        {!isViewMode && !isSuccess && !isError && (
           <footer className="product-modal-actions">
             <button
               type="button"
               className="product-modal-cancel"
               onClick={onClose}
+              disabled={isLoading}
             >
               Cancelar
             </button>
@@ -277,8 +388,20 @@ function ProductModal({ isOpen, onClose, mode = "create" }) {
               type="submit"
               form="product-form"
               className="product-modal-save"
+              disabled={isLoading}
             >
-              Guardar producto
+              {isLoading ? (
+                <>
+                  Guardando
+                  <span className="saving-dots">
+                    <span>.</span>
+                    <span>.</span>
+                    <span>.</span>
+                  </span>
+                </>
+              ) : (
+                "Guardar producto"
+              )}
             </button>
           </footer>
         )}

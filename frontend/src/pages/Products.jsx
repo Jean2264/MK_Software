@@ -5,6 +5,7 @@ import SearchBar from "../components/SearchBar";
 import DataTable from "../components/DataTable";
 import Pagination from "../components/Pagination";
 import ProductModal from "../components/Modal/ProductModal";
+import CategoryModal from "../components/Modal/CategoryModal.jsx";
 
 import "./Products.css";
 
@@ -12,8 +13,18 @@ function Products() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [products, setProducts] = useState([]);
-
+  const [totalPages, setTotalPages] = useState(1);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+
+  //funciones para abrir y cerrar modal categorias
+  const handleOpenCategoryModal = () => {
+    setIsCategoryModalOpen(true);
+  };
+
+  const handleCloseCategoryModal = () => {
+    setIsCategoryModalOpen(false);
+  };
 
   const handleAddProduct = () => {
     setIsProductModalOpen(true);
@@ -23,19 +34,24 @@ function Products() {
     setIsProductModalOpen(false);
   };
 
+  const loadProducts = async () => {
+    try {
+      const response = await productService.getProducts(page);
+
+      setProducts(response.data);
+      setTotalPages(response.pagination.totalPages);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        const response = await productService.getProducts();
-
-        setProducts(response.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
     loadProducts();
-  }, []);
+  }, [page]);
+
+  const handleProductCreated = async () => {
+    await loadProducts();
+  };
 
   const columns = [
     {
@@ -113,16 +129,31 @@ function Products() {
           placeholder="Buscar productos..."
           onSearch={handleSearch}
         />
+
+        <button
+          type="button"
+          className="products-category-button"
+          onClick={handleOpenCategoryModal}
+        >
+          <i className="bi bi-tags"></i>
+          Categorías
+        </button>
       </div>
 
       <DataTable columns={columns} data={products} rowKey="id_producto" />
 
-      <Pagination page={page} totalPages={1} onPageChange={setPage} />
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
 
       <ProductModal
         isOpen={isProductModalOpen}
         onClose={handleCloseProductModal}
+        handleProductCreated={handleProductCreated}
         mode="create"
+      />
+
+      <CategoryModal
+        isOpen={isCategoryModalOpen}
+        onClose={handleCloseCategoryModal}
       />
     </section>
   );

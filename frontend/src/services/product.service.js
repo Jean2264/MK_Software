@@ -13,8 +13,8 @@ async function createProduct(product) {
   return await response.json();
 }
 
-async function getProducts() {
-  const response = await fetch(`${API_URL}/productos`);
+async function getProducts(page = 1) {
+  const response = await fetch(`${API_URL}/productos?page=${page}&limit=10`);
 
   if (!response.ok) {
     throw new Error("Error al obtener los productos");
