@@ -39,3 +39,7 @@ ALTER TABLE producto
 ADD CONSTRAINT fk_producto_subcategoria
 FOREIGN KEY (id_subcategoria)
 REFERENCES subcategoria(id_subcategoria);
+
+
+select * from producto
+delete from producto where nombre= 'MATE COCIDO MAROLIO 25 UN'
