@@ -4,50 +4,9 @@ import SearchBar from "../SearchBar";
 import DataTable from "../DataTable";
 import Pagination from "../Pagination";
 import CategoryFormModal from "./CategoryFormModal";
+import * as categoryService from "../../services/category.service.js";
 
 import "./CategoryModal.css";
-
-const categories = [
-  { id_categoria: 1, nombre: "Bebidas" },
-  { id_categoria: 2, nombre: "Almacén" },
-  { id_categoria: 3, nombre: "Limpieza" },
-  { id_categoria: 4, nombre: "Golosinas" },
-  { id_categoria: 5, nombre: "Lácteos" },
-  { id_categoria: 6, nombre: "Panadería" },
-];
-
-const subcategories = [
-  {
-    id_subcategoria: 1,
-    nombre: "Gaseosas",
-    nombre_categoria: "Bebidas",
-  },
-  {
-    id_subcategoria: 2,
-    nombre: "Agua",
-    nombre_categoria: "Bebidas",
-  },
-  {
-    id_subcategoria: 3,
-    nombre: "Jugos",
-    nombre_categoria: "Bebidas",
-  },
-  {
-    id_subcategoria: 4,
-    nombre: "Galletitas",
-    nombre_categoria: "Almacén",
-  },
-  {
-    id_subcategoria: 5,
-    nombre: "Fideos",
-    nombre_categoria: "Almacén",
-  },
-  {
-    id_subcategoria: 6,
-    nombre: "Arroz",
-    nombre_categoria: "Almacén",
-  },
-];
 
 function CategoryModal({ isOpen, onClose }) {
   const [activeTab, setActiveTab] = useState("categories");
@@ -125,10 +84,18 @@ function CategoryModal({ isOpen, onClose }) {
    * el estado desde el backend.
    */
 
-  const handleSave = (data) => {
-    console.log("Datos del formulario:", data);
+  const handleSave = async (data) => {
+    try {
+      if (formType === "category" && formMode === "create") {
+        await categoryService.createCategory(data);
 
-    handleCloseFormModal();
+        console.log("Categoria creada correctamente");
+
+        handleCloseFormModal();
+      }
+    } catch (error) {
+      console.error("Error al guardar la categoria: ", error);
+    }
   };
 
   /*

@@ -18,5 +18,19 @@ async function createCategory(category) {
 }
 
 //obtener categorias
+async function getCategories(page = 1, limit = 20, search = "") {
+  const paramns = new URLSearchParams({
+    page,
+    limit,
+    search,
+  });
 
-export { createCategory };
+  const response = await fetch(`${API_URL}/cagegorias?${paramns.toString()}`);
+
+  if (!response.ok) {
+    throw new Error("Error al obtener las categorias");
+    return await response.json();
+  }
+}
+
+export { createCategory, getCategories };
