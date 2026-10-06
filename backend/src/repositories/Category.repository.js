@@ -27,10 +27,70 @@ async function createCategory(category) {
   }
 }
 
+async function updateCategory(id, category) {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const updateQuery = `
+    UPDATE categoria
+    SET nombre= $1
+    WHERE id_categoria = $2
+    RETURNING *;
+    `;
+
+    const result = await client.query(updateQuery, [category.nombre, id]);
+
+    if (result.rowCount === 0) {
+      throw new Error("Categoria no encontrada");
+    }
+
+    await client.query("COMMIT");
+
+    return result.rows[0];
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function deleteCategory(id) {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const deleteQuery = `
+    UPDATE categoria
+    SET estado= FALSE
+    WHERE id_categoria = $1
+    RETURNING *;
+    `;
+
+    const result = await client.query(deleteQuery, [id]);
+
+    if (result.rowCount === 0) {
+      throw new Error("Categoria no encontrada");
+    }
+
+    await client.query("COMMIT");
+
+    return result.rows[0];
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 async function getAllCategories({ page = 1, limit = 10, search = "" }) {
   const offset = (page - 1) * limit;
 
-  const conditions = [];
+  const conditions = ["estado= TRUE"];
   const values = [];
 
   /*
@@ -113,4 +173,4 @@ async function getAllCategories({ page = 1, limit = 10, search = "" }) {
   };
 }
 
-export { createCategory, getAllCategories };
+export { createCategory, getAllCategories, updateCategory, deleteCategory };

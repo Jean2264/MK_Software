@@ -7,9 +7,17 @@ async function createCategory(category) {
 }
 
 async function getCategories(filters) {
-  const categories = await categoryRepository.getCategories(filters);
+  const categories = await categoryRepository.getAllCategories(filters);
 
   return categories;
 }
 
-export { createCategory, getCategories };
+async function updateCategory(id, category) {
+  return await categoryRepository.updateCategory(id, category);
+}
+
+async function deleteCategory(id) {
+  return await categoryRepository.deleteCategory(id);
+}
+
+export { createCategory, getCategories, updateCategory, deleteCategory };

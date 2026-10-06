@@ -1,15 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import SearchBar from "../SearchBar";
 import DataTable from "../DataTable";
 import Pagination from "../Pagination";
 import CategoryFormModal from "./CategoryFormModal";
+
 import * as categoryService from "../../services/category.service.js";
 
 import "./CategoryModal.css";
+import ConfirmModal from "./ConfirmModal.jsx";
 
 function CategoryModal({ isOpen, onClose }) {
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
   const [activeTab, setActiveTab] = useState("categories");
+
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
 
   const [categorySearch, setCategorySearch] = useState("");
   const [subcategorySearch, setSubcategorySearch] = useState("");
@@ -22,6 +30,46 @@ function CategoryModal({ isOpen, onClose }) {
   const [formMode, setFormMode] = useState("create");
   const [formType, setFormType] = useState("category");
   const [selectedItem, setSelectedItem] = useState(null);
+
+  /*
+   * ==============================
+   * CARGAR CATEGORÍAS
+   * ==============================
+   */
+
+  const loadCategories = async () => {
+    try {
+      const response = await categoryService.getCategories(
+        categoryPage,
+        20,
+        categorySearch,
+      );
+
+      setCategories(response.data);
+    } catch (error) {
+      console.error("Error al cargar las categorias:", error);
+    }
+  };
+
+  /*
+   * ==============================
+   * EFECTO
+   * ==============================
+   */
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    loadCategories();
+  }, [isOpen, categoryPage]);
+
+  /*
+   * ==============================
+   * CERRAR MODAL
+   * ==============================
+   */
 
   if (!isOpen) {
     return null;
@@ -39,6 +87,8 @@ function CategoryModal({ isOpen, onClose }) {
     setSelectedItem(null);
     setIsFormModalOpen(true);
   };
+
+  // ... resto de tu código
 
   const handleOpenCreateSubcategory = () => {
     setFormMode("create");
@@ -88,13 +138,39 @@ function CategoryModal({ isOpen, onClose }) {
     try {
       if (formType === "category" && formMode === "create") {
         await categoryService.createCategory(data);
+        await loadCategories();
+        handleCloseFormModal();
+      }
 
-        console.log("Categoria creada correctamente");
+      if (formType === "category" && formMode === "edit") {
+        await categoryService.updateCategory(data.id_categoria, data);
 
+        await loadCategories();
         handleCloseFormModal();
       }
     } catch (error) {
       console.error("Error al guardar la categoria: ", error);
+    }
+  };
+
+  const handleDeleteCategory = async (category) => {
+    setSelectedCategory(category);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmDeleteModal = async () => {
+    try {
+      console.log("1. Confirmando eliminación");
+      console.log("Categoría seleccionada:", selectedCategory);
+
+      await categoryService.deleteCategory(selectedCategory.id_categoria);
+
+      await loadCategories();
+
+      setIsConfirmModalOpen(false);
+      setSelectedCategory(null);
+    } catch (error) {
+      console.error("Error al eliminar categoria: ", error);
     }
   };
 
@@ -127,6 +203,7 @@ function CategoryModal({ isOpen, onClose }) {
             type="button"
             className="category-action-button category-action-danger"
             aria-label="Eliminar categoría"
+            onClick={() => handleDeleteCategory(category)}
           >
             <i className="bi bi-trash"></i>
           </button>
@@ -206,7 +283,6 @@ function CategoryModal({ isOpen, onClose }) {
 
               <div>
                 <h2>Gestión de categorías</h2>
-
                 <p>Administrá categorías y subcategorías</p>
               </div>
             </div>
@@ -263,7 +339,6 @@ function CategoryModal({ isOpen, onClose }) {
                 <div className="category-section-header">
                   <div>
                     <h3>Categorías</h3>
-
                     <p>Organizá los productos de tu catálogo.</p>
                   </div>
 
@@ -308,7 +383,6 @@ function CategoryModal({ isOpen, onClose }) {
                 <div className="category-section-header">
                   <div>
                     <h3>Subcategorías</h3>
-
                     <p>Organizá los productos dentro de cada categoría.</p>
                   </div>
 
@@ -359,6 +433,16 @@ function CategoryModal({ isOpen, onClose }) {
         type={formType}
         item={selectedItem}
         categories={categories}
+      />
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        title="¿Eliminar categoría?"
+        message={`¿Estás seguro de que querés eliminar "${selectedCategory?.nombre}"?`}
+        onConfirm={handleConfirmDeleteModal}
+        onCancel={() => {
+          setIsConfirmModalOpen(false);
+          setSelectedCategory(null);
+        }}
       />
     </>
   );

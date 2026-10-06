@@ -1,6 +1,6 @@
 const API_URL = "http://localhost:3000/api";
 
-//crear categoria
+// Crear categoría
 async function createCategory(category) {
   const response = await fetch(`${API_URL}/categorias`, {
     method: "POST",
@@ -17,20 +17,50 @@ async function createCategory(category) {
   return await response.json();
 }
 
-//obtener categorias
+// Obtener categorías
 async function getCategories(page = 1, limit = 20, search = "") {
-  const paramns = new URLSearchParams({
+  const params = new URLSearchParams({
     page,
     limit,
     search,
   });
 
-  const response = await fetch(`${API_URL}/cagegorias?${paramns.toString()}`);
+  const response = await fetch(`${API_URL}/categorias?${params.toString()}`);
 
   if (!response.ok) {
-    throw new Error("Error al obtener las categorias");
-    return await response.json();
+    throw new Error("Error al obtener las categorías");
   }
+
+  return await response.json();
 }
 
-export { createCategory, getCategories };
+async function updateCategory(id, category) {
+  const response = await fetch(`${API_URL}/categorias/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(category),
+  });
+  if (!response.ok) {
+    throw new Error("Error al actualizar la categorias-front");
+  }
+
+  return await response.json();
+}
+
+async function deleteCategory(id) {
+  const response = await fetch(`${API_URL}/categorias/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Error al dar de baja la categorias-front");
+  }
+
+  return await response.json();
+}
+
+export { createCategory, getCategories, updateCategory, deleteCategory };

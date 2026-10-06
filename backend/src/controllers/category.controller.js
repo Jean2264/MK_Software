@@ -37,7 +37,7 @@ async function getAllCategories(req, res) {
     const limit = Number(req.query.limit) || 10;
     const search = req.query.search || "";
 
-    const result = await categoryService.getAllCategories({
+    const result = await categoryService.getCategories({
       page,
       limit,
       search,

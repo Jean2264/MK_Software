@@ -4,7 +4,13 @@ CREATE TABLE categoria (
 );
 
 alter table categoria
+add column estado boolean default true
+select * from categoria
+alter table categoria
 add column estado boolean default TRUE
+
+UPDATE categoria
+set estado= true
 
 CREATE TABLE subcategoria (
     id_subcategoria SERIAL PRIMARY KEY,
