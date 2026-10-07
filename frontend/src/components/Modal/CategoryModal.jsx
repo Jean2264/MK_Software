@@ -6,6 +6,7 @@ import Pagination from "../Pagination";
 import CategoryFormModal from "./CategoryFormModal";
 
 import * as categoryService from "../../services/category.service.js";
+import * as subcategoryService from "../../services/subcategory.service.js";
 
 import "./CategoryModal.css";
 import ConfirmModal from "./ConfirmModal.jsx";
@@ -25,6 +26,9 @@ function CategoryModal({ isOpen, onClose }) {
   const [categoryPage, setCategoryPage] = useState(1);
   const [subcategoryPage, setSubcategoryPage] = useState(1);
 
+  const [categoryTotalPages, setCategoryTotalPages] = useState(1);
+  const [subcategoryTotalPages, setSubcategoryTotalPages] = useState(1);
+
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
 
   const [formMode, setFormMode] = useState("create");
@@ -41,13 +45,35 @@ function CategoryModal({ isOpen, onClose }) {
     try {
       const response = await categoryService.getCategories(
         categoryPage,
-        20,
+        5,
         categorySearch,
       );
 
       setCategories(response.data);
+      setCategoryTotalPages(response.pagination.totalPages);
     } catch (error) {
       console.error("Error al cargar las categorias:", error);
+    }
+  };
+
+  /*
+   * ==============================
+   * CARGAR SUBCATEGORÍAS
+   * ==============================
+   */
+
+  const loadSubcategories = async () => {
+    try {
+      const response = await subcategoryService.getSubcategories(
+        subcategoryPage,
+        5,
+        subcategorySearch,
+      );
+
+      setSubcategories(response.data);
+      setSubcategoryTotalPages(response.pagination.totalPages);
+    } catch (error) {
+      console.error("Error al cargar las subcategorias:", error);
     }
   };
 
@@ -63,7 +89,39 @@ function CategoryModal({ isOpen, onClose }) {
     }
 
     loadCategories();
-  }, [isOpen, categoryPage]);
+    loadSubcategories();
+  }, [isOpen, categoryPage, subcategoryPage]);
+
+  /*
+   * ==============================
+   * RESET AL CERRAR
+   * ==============================
+   */
+
+  useEffect(() => {
+    if (isOpen) {
+      return;
+    }
+
+    setCategorySearch("");
+    setSubcategorySearch("");
+
+    setCategoryPage(1);
+    setSubcategoryPage(1);
+
+    setCategoryTotalPages(1);
+    setSubcategoryTotalPages(1);
+
+    setActiveTab("categories");
+
+    setIsFormModalOpen(false);
+    setFormMode("create");
+    setFormType("category");
+    setSelectedItem(null);
+
+    setIsConfirmModalOpen(false);
+    setSelectedCategory(null);
+  }, [isOpen]);
 
   /*
    * ==============================
@@ -71,9 +129,9 @@ function CategoryModal({ isOpen, onClose }) {
    * ==============================
    */
 
-  if (!isOpen) {
-    return null;
-  }
+  const handleCloseModal = () => {
+    onClose();
+  };
 
   /*
    * ==============================
@@ -87,8 +145,6 @@ function CategoryModal({ isOpen, onClose }) {
     setSelectedItem(null);
     setIsFormModalOpen(true);
   };
-
-  // ... resto de tu código
 
   const handleOpenCreateSubcategory = () => {
     setFormMode("create");
@@ -126,12 +182,6 @@ function CategoryModal({ isOpen, onClose }) {
    * ==============================
    * GUARDAR
    * ==============================
-   *
-   * Por ahora solamente simulamos
-   * el guardado.
-   *
-   * Después acá vamos a actualizar
-   * el estado desde el backend.
    */
 
   const handleSave = async (data) => {
@@ -144,33 +194,74 @@ function CategoryModal({ isOpen, onClose }) {
 
       if (formType === "category" && formMode === "edit") {
         await categoryService.updateCategory(data.id_categoria, data);
-
         await loadCategories();
         handleCloseFormModal();
       }
+
+      if (formType === "subcategory" && formMode === "create") {
+        await subcategoryService.createSubcategory(data);
+        await loadSubcategories();
+        handleCloseFormModal();
+      }
+
+      if (formType === "subcategory" && formMode === "edit") {
+        await subcategoryService.updateSubcategory(data.id_subcategoria, data);
+        await loadSubcategories();
+        handleCloseFormModal();
+      }
     } catch (error) {
-      console.error("Error al guardar la categoria: ", error);
+      console.error("Error al guardar la categoria:", error);
     }
   };
 
+  /*
+   * ==============================
+   * ELIMINAR CATEGORÍA
+   * ==============================
+   */
+
   const handleDeleteCategory = async (category) => {
+    setFormType("category");
     setSelectedCategory(category);
     setIsConfirmModalOpen(true);
   };
 
+  /*
+   * ==============================
+   * ELIMINAR SUBCATEGORÍA
+   * ==============================
+   */
+
+  const handleDeleteSubcategory = async (subcategory) => {
+    setFormType("subcategory");
+    setSelectedCategory(subcategory);
+    setIsConfirmModalOpen(true);
+  };
+
+  /*
+   * ==============================
+   * CONFIRMAR ELIMINACIÓN
+   * ==============================
+   */
+
   const handleConfirmDeleteModal = async () => {
     try {
-      console.log("1. Confirmando eliminación");
-      console.log("Categoría seleccionada:", selectedCategory);
+      if (formType === "category") {
+        await categoryService.deleteCategory(selectedCategory.id_categoria);
+        await loadCategories();
+      }
 
-      await categoryService.deleteCategory(selectedCategory.id_categoria);
-
-      await loadCategories();
+      if (formType === "subcategory") {
+        await subcategoryService.deleteSubcategory(
+          selectedCategory.id_subcategoria,
+        );
+        await loadSubcategories();
+      }
 
       setIsConfirmModalOpen(false);
       setSelectedCategory(null);
     } catch (error) {
-      console.error("Error al eliminar categoria: ", error);
+      console.error("Error al eliminar:", error);
     }
   };
 
@@ -244,6 +335,7 @@ function CategoryModal({ isOpen, onClose }) {
           <button
             type="button"
             className="category-action-button category-action-danger"
+            onClick={() => handleDeleteSubcategory(subcategory)}
             aria-label="Eliminar subcategoría"
           >
             <i className="bi bi-trash"></i>
@@ -255,19 +347,53 @@ function CategoryModal({ isOpen, onClose }) {
 
   /*
    * ==============================
-   * FILTROS TEMPORALES
+   * BUSCAR CATEGORÍAS
    * ==============================
    */
 
-  const filteredCategories = categories.filter((category) =>
-    category.nombre.toLowerCase().includes(categorySearch.toLowerCase()),
-  );
+  const handleSearchCategory = async () => {
+    setCategoryPage(1);
 
-  const filteredSubcategories = subcategories.filter((subcategory) =>
-    `${subcategory.nombre} ${subcategory.nombre_categoria}`
-      .toLowerCase()
-      .includes(subcategorySearch.toLowerCase()),
-  );
+    try {
+      const response = await categoryService.getCategories(
+        1,
+        5,
+        categorySearch,
+      );
+
+      setCategories(response.data);
+      setCategoryTotalPages(response.pagination.totalPages);
+    } catch (error) {
+      console.error("Error al buscar categorías:", error);
+    }
+  };
+
+  /*
+   * ==============================
+   * BUSCAR SUBCATEGORÍAS
+   * ==============================
+   */
+
+  const handleSearchSubcategory = async () => {
+    setSubcategoryPage(1);
+
+    try {
+      const response = await subcategoryService.getSubcategories(
+        1,
+        5,
+        subcategorySearch,
+      );
+
+      setSubcategories(response.data);
+      setSubcategoryTotalPages(response.pagination.totalPages);
+    } catch (error) {
+      console.error("Error al buscar subcategorías:", error);
+    }
+  };
+
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <>
@@ -290,7 +416,7 @@ function CategoryModal({ isOpen, onClose }) {
             <button
               type="button"
               className="category-modal-close"
-              onClick={onClose}
+              onClick={handleCloseModal}
               aria-label="Cerrar"
             >
               <i className="bi bi-x-lg"></i>
@@ -358,19 +484,19 @@ function CategoryModal({ isOpen, onClose }) {
                     value={categorySearch}
                     onChange={setCategorySearch}
                     placeholder="Buscar categorías..."
-                    onSearch={() => {}}
+                    onSearch={handleSearchCategory}
                   />
                 </div>
 
                 <DataTable
                   columns={categoryColumns}
-                  data={filteredCategories}
+                  data={categories}
                   rowKey="id_categoria"
                 />
 
                 <Pagination
                   page={categoryPage}
-                  totalPages={1}
+                  totalPages={categoryTotalPages}
                   onPageChange={setCategoryPage}
                 />
               </div>
@@ -402,19 +528,19 @@ function CategoryModal({ isOpen, onClose }) {
                     value={subcategorySearch}
                     onChange={setSubcategorySearch}
                     placeholder="Buscar subcategorías..."
-                    onSearch={() => {}}
+                    onSearch={handleSearchSubcategory}
                   />
                 </div>
 
                 <DataTable
                   columns={subcategoryColumns}
-                  data={filteredSubcategories}
+                  data={subcategories}
                   rowKey="id_subcategoria"
                 />
 
                 <Pagination
                   page={subcategoryPage}
-                  totalPages={1}
+                  totalPages={subcategoryTotalPages}
                   onPageChange={setSubcategoryPage}
                 />
               </div>
@@ -434,9 +560,14 @@ function CategoryModal({ isOpen, onClose }) {
         item={selectedItem}
         categories={categories}
       />
+
       <ConfirmModal
         isOpen={isConfirmModalOpen}
-        title="¿Eliminar categoría?"
+        title={
+          formType === "category"
+            ? "¿Eliminar categoría?"
+            : "¿Eliminar subcategoría?"
+        }
         message={`¿Estás seguro de que querés eliminar "${selectedCategory?.nombre}"?`}
         onConfirm={handleConfirmDeleteModal}
         onCancel={() => {

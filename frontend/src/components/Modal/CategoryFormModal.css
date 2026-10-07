@@ -273,10 +273,16 @@
     transform 0.2s ease;
 }
 
-.category-form-save:hover {
+.category-form-save:hover:not(:disabled) {
   background: var(--color-primary-dark);
-
   transform: translateY(-1px);
+}
+
+.category-form-save:disabled {
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+  transform: none;
 }
 
 .category-form-save i {

@@ -17,6 +17,10 @@ function CategoryFormModal({
   const isEdit = mode === "edit";
   const isSubcategory = type === "subcategory";
 
+  const isFormValid = isSubcategory
+    ? name.trim() !== "" && categoryId !== ""
+    : name.trim() !== "";
+
   /*
    * ==============================
    * CARGAR DATOS EN MODO EDICIÓN
@@ -182,7 +186,11 @@ function CategoryFormModal({
               Cancelar
             </button>
 
-            <button type="submit" className="category-form-save">
+            <button
+              type="submit"
+              className="category-form-save"
+              disabled={!isFormValid}
+            >
               <i className="bi bi-check-lg"></i>
 
               {isEdit ? "Guardar cambios" : "Guardar"}

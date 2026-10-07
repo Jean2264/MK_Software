@@ -31,7 +31,7 @@ async function createSubcategory(subcategory) {
 async function getAllSubcategories({ page = 1, limit = 10, search = "" }) {
   const offset = (page - 1) * limit;
 
-  const conditions = [];
+  const conditions = ["s.estado= TRUE"];
   const values = [];
 
   // ==============================
@@ -113,4 +113,73 @@ async function getAllSubcategories({ page = 1, limit = 10, search = "" }) {
   };
 }
 
-export { createSubcategory, getAllSubcategories };
+async function updateSubcategory(id, subcategory) {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const updateQuery = `
+    UPDATE subcategoria
+    SET nombre= $1,
+    id_categoria= $2
+    WHERE id_subcategoria= $3
+    RETURNING *;
+    `;
+
+    const result = await client.query(updateQuery, [
+      subcategory.nombre,
+      subcategory.id_categoria,
+      id,
+    ]);
+
+    if (result.rowCount === 0) {
+      throw new Error("Subcategoria no encontrada");
+    }
+
+    await client.query("COMMIT");
+
+    return result.rows[0];
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function deleteSubcategory(id) {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const updateQuery = `
+    UPDATE subcategoria
+    SET estado= FALSE
+    WHERE id_subcategoria= $1
+    RETURNING *;
+    `;
+
+    const result = await client.query(updateQuery, [id]);
+
+    if (result.rowCount === 0) {
+      throw new Error("Subcategoria no encontrada");
+    }
+
+    await client.query("COMMIT");
+
+    return result.rows[0];
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+export {
+  createSubcategory,
+  getAllSubcategories,
+  updateSubcategory,
+  deleteSubcategory,
+};

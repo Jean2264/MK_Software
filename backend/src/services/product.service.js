@@ -12,4 +12,22 @@ async function getProducts(filters) {
   return products;
 }
 
-export { createProduct, getProducts };
+async function getProductById(id) {
+  return await productRepository.getProductById(id);
+}
+
+async function updateProduct(id, product) {
+  return await productRepository.updateProduct(id, product);
+}
+
+async function deleteProduct(id) {
+  return await productRepository.deleteProduct(id);
+}
+
+export {
+  createProduct,
+  getProducts,
+  getProductById,
+  updateProduct,
+  deleteProduct,
+};

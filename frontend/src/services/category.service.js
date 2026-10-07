@@ -18,7 +18,7 @@ async function createCategory(category) {
 }
 
 // Obtener categorías
-async function getCategories(page = 1, limit = 20, search = "") {
+async function getCategories(page = 1, limit = 5, search = "") {
   const params = new URLSearchParams({
     page,
     limit,
@@ -43,7 +43,7 @@ async function updateCategory(id, category) {
     body: JSON.stringify(category),
   });
   if (!response.ok) {
-    throw new Error("Error al actualizar la categorias-front");
+    throw new Error("Error al actualizar la categoria-front");
   }
 
   return await response.json();
