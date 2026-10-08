@@ -24,6 +24,7 @@ function CategoryModal({ isOpen, onClose }) {
   const [subcategorySearch, setSubcategorySearch] = useState("");
 
   const [categoryPage, setCategoryPage] = useState(1);
+
   const [subcategoryPage, setSubcategoryPage] = useState(1);
 
   const [categoryTotalPages, setCategoryTotalPages] = useState(1);
@@ -45,7 +46,7 @@ function CategoryModal({ isOpen, onClose }) {
     try {
       const response = await categoryService.getCategories(
         categoryPage,
-        5,
+        8,
         categorySearch,
       );
 
@@ -66,7 +67,7 @@ function CategoryModal({ isOpen, onClose }) {
     try {
       const response = await subcategoryService.getSubcategories(
         subcategoryPage,
-        5,
+        20,
         subcategorySearch,
       );
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import "./CategoryFormModal.css";
+import Combobox from "../Combobox";
 
 function CategoryFormModal({
   isOpen,
@@ -65,6 +66,11 @@ function CategoryFormModal({
     : isSubcategory
       ? "Agregar subcategoría"
       : "Agregar categoría";
+
+  const categoryOptions = categories.map((category) => ({
+    id: category.id_categoria,
+    label: category.nombre,
+  }));
 
   /*
    * ==============================
@@ -155,23 +161,12 @@ function CategoryFormModal({
           {isSubcategory && (
             <div className="category-form-group">
               <label htmlFor="subcategory-category">Categoría</label>
-
-              <select
-                id="subcategory-category"
+              <Combobox
+                options={categoryOptions}
                 value={categoryId}
-                onChange={(event) => setCategoryId(event.target.value)}
-              >
-                <option value="">Seleccionar categoría</option>
-
-                {categories.map((category) => (
-                  <option
-                    key={category.id_categoria}
-                    value={category.id_categoria}
-                  >
-                    {category.nombre}
-                  </option>
-                ))}
-              </select>
+                onChange={setCategoryId}
+                placeholder="Selecctionar categoria"
+              />
             </div>
           )}
 

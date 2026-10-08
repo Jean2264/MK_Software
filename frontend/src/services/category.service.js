@@ -18,7 +18,7 @@ async function createCategory(category) {
 }
 
 // Obtener categorías
-async function getCategories(page = 1, limit = 5, search = "") {
+async function getCategories(page = 1, limit = 20, search = "") {
   const params = new URLSearchParams({
     page,
     limit,
