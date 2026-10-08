@@ -9,6 +9,9 @@ route.get("/", subcategoryController.getAllSubcategories);
 
 route.put("/:id", subcategoryController.updateSubactegory);
 route.delete("/:id", subcategoryController.deleteSubcategory);
-route.get("/:id", subcategoryController.getSubcategoriesByCategoryId);
+route.get(
+  "/categoria/:idCategoria",
+  subcategoryController.getSubcategoriesByCategoryId,
+);
 
 export default route;

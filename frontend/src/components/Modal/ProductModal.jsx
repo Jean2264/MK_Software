@@ -1,5 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import * as productService from "../../services/product.service.js";
+import * as categoryService from "../../services/category.service.js";
+import * as subcategoryService from "../../services/subcategory.service.js";
 
 import "./ProductModal.css";
 
@@ -18,6 +20,34 @@ function ProductModal({
 
   const [categoryId, setCategoryId] = useState("");
   const [subcategoryId, setSubcategoryId] = useState("");
+
+  const loadCategories = async () => {
+    try {
+      const response = await categoryService.getCategories(1, 20, "");
+
+      console.log("Categorías:", response.data);
+      setCategories(response.data);
+    } catch (error) {
+      console.error("Error al obtener categorias");
+    }
+  };
+
+  const loadSubcategories = async () => {
+    try {
+      const response = await subcategoryService.getSubcategoriesByCategoryId(
+        categoryId,
+        1,
+        20,
+        "",
+      );
+
+      console.log("Subcategorías:", response.data);
+
+      setSubcategories(response.data);
+    } catch (error) {
+      console.error("Error al obtener subcategorías:", error);
+    }
+  };
 
   const fileInputRef = useRef(null);
 
@@ -138,9 +168,23 @@ function ProductModal({
     return () => clearTimeout(timeout);
   }, [status, onClose]);
 
-  if (!isOpen) {
-    return null;
-  }
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    loadCategories();
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!categoryId) {
+      setSubcategories([]);
+      setSubcategoryId("");
+      return;
+    }
+
+    loadSubcategories();
+  }, [categoryId]);
 
   const renderResult = () => {
     if (isSuccess) {
@@ -194,6 +238,9 @@ function ProductModal({
 
     return null;
   };
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div className="product-modal-overlay">
@@ -321,9 +368,20 @@ function ProductModal({
 
                   <select
                     id="product-category"
+                    value={categoryId}
                     disabled={isViewMode || isLoading}
+                    onChange={(e) => setCategoryId(e.target.value)}
                   >
                     <option value="">Seleccionar categoría</option>
+
+                    {categories.map((category) => (
+                      <option
+                        key={category.id_categoria}
+                        value={category.id_categoria}
+                      >
+                        {category.nombre}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -332,9 +390,19 @@ function ProductModal({
 
                   <select
                     id="product-subcategory"
+                    value={subcategoryId}
                     disabled={isViewMode || isLoading}
+                    onChange={(e) => setSubcategoryId(e.target.value)}
                   >
                     <option value="">Seleccionar subcategoría</option>
+                    {subcategories.map((subcategory) => (
+                      <option
+                        key={subcategory.id_subcategoria}
+                        value={subcategory.id_subcategoria}
+                      >
+                        {subcategory.nombre}
+                      </option>
+                    ))}
                   </select>
                 </div>
 

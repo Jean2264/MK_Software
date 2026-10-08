@@ -76,9 +76,33 @@ async function deleteSubcategory(id) {
   return await response.json();
 }
 
+async function getSubcategoriesByCategoryId(
+  categoryId,
+  page = 1,
+  limit = 20,
+  search = "",
+) {
+  const params = new URLSearchParams({
+    page,
+    limit,
+    search,
+  });
+
+  const response = await fetch(
+    `${API_URL}/subcategorias/categoria/${categoryId}?${params.toString()}`,
+  );
+
+  if (!response.ok) {
+    throw new Error("Error al obtener las subategorias de la categoria");
+  }
+
+  return response.json();
+}
+
 export {
   createSubcategory,
   getSubcategories,
   updateSubcategory,
   deleteSubcategory,
+  getSubcategoriesByCategoryId,
 };
