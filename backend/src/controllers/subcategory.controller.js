@@ -92,9 +92,34 @@ async function deleteSubcategory(req, res) {
   }
 }
 
+async function getSubcategoriesByCategoryId(req, res) {
+  try {
+    const { idCategoria } = req.params;
+
+    const { page = 1, limit = 20, search = "" } = req.query;
+
+    const result = await subcategoryService.getSubcategoriesByCategoryId(
+      idCategoria,
+      {
+        page: Number(page),
+        limit: Number(limit),
+        search,
+      },
+    );
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error al obtener las subcategorías",
+    });
+  }
+}
+
 export {
   createSubcategory,
   getAllSubcategories,
   updateSubactegory,
   deleteSubcategory,
+  getSubcategoriesByCategoryId,
 };

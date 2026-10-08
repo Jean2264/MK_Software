@@ -22,9 +22,17 @@ async function deleteSubcategory(id) {
   return await subcategoryRepository.deleteSubcategory(id);
 }
 
+async function getSubcategoriesByCategoryId(idCategoria, filters) {
+  return await subcategoryRepository.getSubcategoriesByCategoryId(
+    idCategoria,
+    filters,
+  );
+}
+
 export {
   createSubcategory,
   getSubcategories,
   updateSubcategory,
   deleteSubcategory,
+  getSubcategoriesByCategoryId,
 };

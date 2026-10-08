@@ -13,6 +13,12 @@ function ProductModal({
   const [imageFile, setImageFile] = useState(null);
   const [status, setStatus] = useState("idle");
 
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+
+  const [categoryId, setCategoryId] = useState("");
+  const [subcategoryId, setSubcategoryId] = useState("");
+
   const fileInputRef = useRef(null);
 
   const titles = {
@@ -338,6 +344,8 @@ function ProductModal({
                   <input
                     id="product-retail-price"
                     type="number"
+                    min="0"
+                    step="0.01"
                     placeholder="0,00"
                     disabled={isViewMode || isLoading}
                   />
@@ -351,6 +359,8 @@ function ProductModal({
                   <input
                     id="product-wholesale-price"
                     type="number"
+                    min="0"
+                    step="0.01"
                     placeholder="Opcional"
                     disabled={isViewMode || isLoading}
                   />
@@ -364,6 +374,7 @@ function ProductModal({
                   <input
                     id="product-wholesale-min"
                     type="number"
+                    min="0"
                     placeholder="Opcional"
                     disabled={isViewMode || isLoading}
                   />
