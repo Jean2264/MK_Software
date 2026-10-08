@@ -23,6 +23,9 @@ alter table subcategoria
 add constraint fk_subcategoria_categoria
 foreign key (id_categoria) references categoria(id_categoria)
 
+SELECT *
+FROM subcategoria
+WHERE id_categoria = 4;
 
 CREATE TABLE producto (
     id_producto SERIAL PRIMARY KEY,
