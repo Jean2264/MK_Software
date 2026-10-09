@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import "./CategoryFormModal.css";
 import Combobox from "../Combobox";
+import * as categoryService from "../../services/category.service.js";
 
 function CategoryFormModal({
   isOpen,
@@ -10,10 +11,20 @@ function CategoryFormModal({
   mode = "create",
   type = "category",
   item = null,
-  categories = [],
 }) {
   const [name, setName] = useState("");
   const [categoryId, setCategoryId] = useState("");
+
+  // Datos y paginación del Combobox
+  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [categoryPage, setCategoryPage] = useState(1);
+  const [categoryLoading, setCategoryLoading] = useState(false);
+  const [categoryHasMore, setCategoryHasMore] = useState(true);
+  const [categorySearch, setCategorySearch] = useState("");
+
+  // Evita solicitudes simultáneas de la misma carga
+  const loadingRef = useRef(false);
+  const requestIdRef = useRef(0);
 
   const isEdit = mode === "edit";
   const isSubcategory = type === "subcategory";
@@ -24,7 +35,68 @@ function CategoryFormModal({
 
   /*
    * ==============================
-   * CARGAR DATOS EN MODO EDICIÓN
+   * CARGAR CATEGORÍAS PAGINADAS
+   * ==============================
+   */
+
+  const loadCategoryOptions = async (page = 1, search = categorySearch) => {
+    if (loadingRef.current) return;
+
+    loadingRef.current = true;
+    setCategoryLoading(true);
+
+    const requestId = requestIdRef.current;
+
+    try {
+      const response = await categoryService.getCategories(page, 10, search);
+
+      if (requestId !== requestIdRef.current) return;
+
+      setCategoryOptions((previous) =>
+        page === 1
+          ? response.data
+          : [
+              ...previous,
+              ...response.data.filter(
+                (category) =>
+                  !previous.some(
+                    (existing) =>
+                      existing.id_categoria === category.id_categoria,
+                  ),
+              ),
+            ],
+      );
+
+      setCategoryPage(page);
+      setCategoryHasMore(page < response.pagination.totalPages);
+    } catch (error) {
+      console.error("Error al cargar categorías:", error);
+    } finally {
+      if (requestId === requestIdRef.current) {
+        loadingRef.current = false;
+        setCategoryLoading(false);
+      }
+    }
+  };
+
+  const handleCategorySearch = (search) => {
+    // Invalidar solicitudes anteriores.
+    requestIdRef.current += 1;
+    loadingRef.current = false;
+
+    // Reiniciar la paginación y los resultados.
+    setCategoryOptions([]);
+    setCategoryPage(1);
+    setCategoryHasMore(true);
+    setCategoryLoading(false);
+
+    // Solicitar los resultados de la nueva búsqueda.
+    loadCategoryOptions(1, search);
+  };
+
+  /*
+   * ==============================
+   * ABRIR Y REINICIAR EL FORMULARIO
    * ==============================
    */
 
@@ -33,25 +105,37 @@ function CategoryFormModal({
       return;
     }
 
-    if (item && isEdit) {
-      setName(item.nombre || "");
+    setName(item && isEdit ? item.nombre || "" : "");
 
-      if (isSubcategory) {
-        setCategoryId(item.id_categoria?.toString() || "");
-      } else {
-        setCategoryId("");
-      }
+    setCategoryId(
+      item && isEdit && isSubcategory ? String(item.id_categoria ?? "") : "",
+    );
 
-      return;
+    // Invalidar solicitudes anteriores
+    requestIdRef.current += 1;
+    loadingRef.current = false;
+    setCategoryOptions([]);
+    setCategoryPage(1);
+    setCategoryHasMore(true);
+    setCategoryLoading(false);
+
+    if (isSubcategory) {
+      loadCategoryOptions(1);
     }
-
-    setName("");
-    setCategoryId("");
   }, [isOpen, item, isEdit, isSubcategory]);
 
-  if (!isOpen) {
-    return null;
-  }
+  /*
+   * ==============================
+   * CERRAR Y LIMPIAR
+   * ==============================
+   */
+
+  const handleClose = () => {
+    requestIdRef.current += 1;
+    loadingRef.current = false;
+    setCategoryLoading(false);
+    onClose();
+  };
 
   /*
    * ==============================
@@ -67,18 +151,13 @@ function CategoryFormModal({
       ? "Agregar subcategoría"
       : "Agregar categoría";
 
-  const categoryOptions = categories.map((category) => ({
-    id: category.id_categoria,
-    label: category.nombre,
-  }));
-
   /*
    * ==============================
-   * SUBMIT
+   * GUARDAR
    * ==============================
    */
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!name.trim()) {
@@ -105,8 +184,12 @@ function CategoryFormModal({
       }
     }
 
-    onSave(data);
+    await onSave(data);
   };
+
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div className="category-form-modal-overlay">
@@ -116,7 +199,7 @@ function CategoryFormModal({
         <header className="category-form-modal-header">
           <div className="category-form-modal-title">
             <div className="category-form-modal-icon">
-              <i className={isSubcategory ? "bi bi-tag" : "bi bi-tags"}></i>
+              <i className={isSubcategory ? "bi bi-tag" : "bi bi-tags"} />
             </div>
 
             <div>
@@ -127,10 +210,10 @@ function CategoryFormModal({
           <button
             type="button"
             className="category-form-modal-close"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Cerrar"
           >
-            <i className="bi bi-x-lg"></i>
+            <i className="bi bi-x-lg" />
           </button>
         </header>
 
@@ -156,27 +239,34 @@ function CategoryFormModal({
             />
           </div>
 
-          {/* CATEGORÍA */}
+          {/* CATEGORÍA DE LA SUBCATEGORÍA */}
 
           {isSubcategory && (
             <div className="category-form-group">
               <label htmlFor="subcategory-category">Categoría</label>
+
               <Combobox
                 options={categoryOptions}
                 value={categoryId}
-                onChange={setCategoryId}
-                placeholder="Selecctionar categoria"
+                onChange={(selectedId) => setCategoryId(String(selectedId))}
+                placeholder="Seleccionar categoría"
+                getOptionValue={(category) => category.id_categoria}
+                getOptionLabel={(category) => category.nombre}
+                onLoadMore={() => loadCategoryOptions(categoryPage + 1)}
+                loading={categoryLoading}
+                hasMore={categoryHasMore}
+                onSearch={handleCategorySearch}
               />
             </div>
           )}
 
-          {/* ACTIONS */}
+          {/* ACCIONES */}
 
           <footer className="category-form-actions">
             <button
               type="button"
               className="category-form-cancel"
-              onClick={onClose}
+              onClick={handleClose}
             >
               Cancelar
             </button>
@@ -186,7 +276,7 @@ function CategoryFormModal({
               className="category-form-save"
               disabled={!isFormValid}
             >
-              <i className="bi bi-check-lg"></i>
+              <i className="bi bi-check-lg" />
 
               {isEdit ? "Guardar cambios" : "Guardar"}
             </button>

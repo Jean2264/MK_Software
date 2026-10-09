@@ -14,6 +14,9 @@ async function createProduct(req, res) {
           ? null
           : req.body.cantidadMinMayorista,
 
+      idSubcategoria:
+        req.body.idSubcategoria === "" ? null : req.body.idSubcategoria,
+
       imagen: req.file ? `/uploads/productos/${req.file.filename}` : null,
     };
 
