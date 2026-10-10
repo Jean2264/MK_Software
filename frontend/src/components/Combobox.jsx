@@ -16,6 +16,9 @@ function Combobox({
 
   loading = false,
   hasMore = false,
+  disabled = false,
+
+  selectedOptionFallback = null,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -25,21 +28,27 @@ function Combobox({
   const loadMoreLockRef = useRef(false);
   const optionsContainerRef = useRef(null);
 
-  // Mantener la última función de búsqueda sin reiniciar el debounce
-  // cada vez que el componente padre se renderiza.
+  // Mantiene actualizada la función de búsqueda sin reiniciar el debounce.
   useEffect(() => {
     onSearchRef.current = onSearch;
   }, [onSearch]);
 
-  const selectedOption = options.find(
-    (option) => String(getOptionValue(option)) === String(value),
-  );
+  // Busca la opción seleccionada en la lista actual.
+  // Si no está disponible por la paginación, utiliza la opción de respaldo.
+  const selectedOption =
+    options.find(
+      (option) => String(getOptionValue(option)) === String(value),
+    ) ??
+    (selectedOptionFallback &&
+    String(getOptionValue(selectedOptionFallback)) === String(value)
+      ? selectedOptionFallback
+      : null);
 
   /*
    * BÚSQUEDA CON DEBOUNCE
    *
-   * La búsqueda se ejecuta al cambiar el texto,
-   * no al abrir el Combobox.
+   * Ejecuta la búsqueda 300 ms después de que el usuario
+   * deja de escribir, evitando solicitudes innecesarias.
    */
   useEffect(() => {
     if (!isOpen || search === previousSearchRef.current) {
@@ -55,7 +64,9 @@ function Combobox({
   }, [search, isOpen]);
 
   /*
-   * LIBERAR EL BLOQUEO CUANDO TERMINA LA CARGA
+   * LIBERAR EL BLOQUEO DE PAGINACIÓN
+   *
+   * Permite solicitar otra página cuando termina la carga actual.
    */
   useEffect(() => {
     if (!loading) {
@@ -65,9 +76,12 @@ function Combobox({
 
   /*
    * SELECCIÓN
+   *
+   * Notifica al componente padre el identificador seleccionado.
    */
   const handleSelect = (option) => {
-    onChange(getOptionValue(option));
+    onChange?.(getOptionValue(option));
+
     setIsOpen(false);
     setSearch("");
     previousSearchRef.current = "";
@@ -75,6 +89,9 @@ function Combobox({
 
   /*
    * SCROLL INFINITO
+   *
+   * Solicita la siguiente página al llegar al final de la lista,
+   * siempre que existan más resultados y no haya otra carga activa.
    */
   const handleScroll = (event) => {
     const element = event.currentTarget;
@@ -96,8 +113,15 @@ function Combobox({
 
   /*
    * ABRIR / CERRAR
+   *
+   * Limpia la búsqueda al cerrar y evita abrir el componente
+   * cuando está deshabilitado.
    */
   const handleToggle = () => {
+    if (disabled) {
+      return;
+    }
+
     if (isOpen) {
       setIsOpen(false);
       setSearch("");
@@ -115,6 +139,7 @@ function Combobox({
         className="combobox-control"
         onClick={handleToggle}
         aria-expanded={isOpen}
+        disabled={disabled}
       >
         <span>
           {selectedOption ? getOptionLabel(selectedOption) : placeholder}
@@ -123,7 +148,7 @@ function Combobox({
         <i className={`bi ${isOpen ? "bi-chevron-up" : "bi-chevron-down"}`} />
       </button>
 
-      {isOpen && (
+      {isOpen && !disabled && (
         <div className="combobox-dropdown">
           <div className="combobox-search">
             <i className="bi bi-search" />

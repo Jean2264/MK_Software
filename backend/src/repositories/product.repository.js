@@ -223,28 +223,26 @@ async function updateProduct(idProducto, product) {
   const query = `
     UPDATE producto
     SET
-      codigo_barras = $1,
-      imagen = $2,
-      nombre = $3,
-      precio_minorista = $4,
-      precio_mayorista = $5,
-      cantidad_min_mayorista = $6,
-      id_subcategoria = $7
-    WHERE id_producto = $8
+
+      imagen = $1,
+      nombre = $2,
+      precio_minorista = $3,
+      precio_mayorista = $4,
+      cantidad_min_mayorista = $5,
+      id_subcategoria = $6
+    WHERE id_producto = $7
     RETURNING *;
   `;
 
   const values = [
-    product.codigoBarras,
     product.imagen,
     product.nombre,
     product.precioMinorista,
-    product.precioMayorista,
-    product.cantidadMinMayorista,
+    product.precioMayorista === "" ? null : product.precioMayorista,
+    product.cantidadMinMayorista === "" ? null : product.cantidadMinMayorista,
     product.idSubcategoria,
     idProducto,
   ];
-
   const result = await pool.query(query, values);
 
   return result.rows[0];

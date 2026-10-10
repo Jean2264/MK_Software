@@ -262,6 +262,18 @@
   font-weight: 600;
 }
 
+.product-form-readonly {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  color: #495057;
+  font-size: 14px;
+}
+
 .product-form-group input,
 .product-form-group select {
   width: 100%;
@@ -292,7 +304,8 @@
 }
 
 .product-form-group input:disabled,
-.product-form-group select:disabled {
+.product-form-group select:disabled,
+.product-form-group input:read-only {
   background: var(--color-background);
 
   color: var(--color-text-secondary);

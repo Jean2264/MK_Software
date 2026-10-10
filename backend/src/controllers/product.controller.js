@@ -97,17 +97,40 @@ async function updateProduct(req, res) {
   try {
     const id = Number(req.params.id);
 
-    const product = await productService.updateProduct(id, req.body);
+    const product = {
+      ...req.body,
 
-    if (!product) {
+      precioMayorista:
+        req.body.precioMayorista === "" ? null : req.body.precioMayorista,
+
+      cantidadMinMayorista:
+        req.body.cantidadMinMayorista === ""
+          ? null
+          : req.body.cantidadMinMayorista,
+
+      idSubcategoria:
+        req.body.idSubcategoria === "" ? null : req.body.idSubcategoria,
+
+      // Solo actualizar la imagen si se subió una nueva.
+      imagen: req.file ? `/uploads/productos/${req.file.filename}` : undefined,
+    };
+
+    // Si no se subió una imagen, conservar la existente.
+    if (product.imagen === undefined) {
+      delete product.imagen;
+    }
+
+    const updatedProduct = await productService.updateProduct(id, product);
+
+    if (!updatedProduct) {
       return res.status(404).json({
         message: "Producto no encontrado",
       });
     }
 
     return res.status(200).json({
-      message: "producto actualzado",
-      data: product,
+      message: "Producto actualizado",
+      data: updatedProduct,
     });
   } catch (error) {
     console.error(error);

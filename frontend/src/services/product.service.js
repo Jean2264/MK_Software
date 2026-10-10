@@ -13,8 +13,14 @@ async function createProduct(product) {
   return await response.json();
 }
 
-async function getProducts(page = 1) {
-  const response = await fetch(`${API_URL}/productos?page=${page}&limit=10`);
+async function getProducts(page = 1, search = "") {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: "10",
+    search,
+  });
+
+  const response = await fetch(`${API_URL}/productos?${params.toString()}`);
 
   if (!response.ok) {
     throw new Error("Error al obtener los productos");
@@ -38,18 +44,13 @@ async function getProductById(id) {
 }
 
 async function updateProduct(id, product) {
-  const response = await fetch(
-    `
-    ${API_URL}/productos/${id}
-    `,
-    {
-      method: "PUT",
-      body: product,
-    },
-  );
+  const response = await fetch(`${API_URL}/productos/${id}`, {
+    method: "PUT",
+    body: product,
+  });
 
   if (!response.ok) {
-    throw new Error("Error al actualizar product-front");
+    throw new Error("Error al actualizar el producto");
   }
 
   return await response.json();
