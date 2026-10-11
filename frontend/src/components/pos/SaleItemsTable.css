@@ -1,0 +1,99 @@
+.sale-items {
+  width: 100%;
+  min-width: 0;
+  padding: 20px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e8e5ee);
+  border-radius: 14px;
+}
+
+.sale-items__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.sale-items__header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.sale-items__header p {
+  margin: 5px 0 0;
+  color: #77717f;
+  font-size: 0.875rem;
+}
+
+.sale-items__count {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #f3edff;
+  color: #722bff;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.sale-items__table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #eeeaf3;
+  border-radius: 10px;
+}
+
+.sale-items__table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.sale-items__table th,
+.sale-items__table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #eeeaf3;
+  white-space: nowrap;
+  font-size: 0.875rem;
+}
+
+.sale-items__table th {
+  background: #faf9fc;
+  color: #77717f;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.sale-items__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.sale-items__table tbody tr:hover {
+  background: #faf8ff;
+}
+
+.sale-items__product-name {
+  color: #292532;
+  font-weight: 500;
+}
+
+.sale-items__subtotal {
+  color: #722bff;
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .sale-items {
+    padding: 14px;
+  }
+
+  .sale-items__header {
+    align-items: flex-start;
+  }
+
+  .sale-items__header h2 {
+    font-size: 1rem;
+  }
+}

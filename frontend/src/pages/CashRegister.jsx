@@ -1,9 +1,11 @@
+import SaleItemsTable from "../components/pos/SaleItemsTable";
+
 function CashRegister() {
   return (
-    <div>
+    <main>
       <h1>Punto de venta</h1>
-      <p>Acá estará la caja de MK.</p>
-    </div>
+      <SaleItemsTable />
+    </main>
   );
 }
 
