@@ -16,6 +16,10 @@ async function getProductById(id) {
   return await productRepository.getProductById(id);
 }
 
+async function getProductByBarcode(barcode) {
+  return await productRepository.getProductByBarcode(barcode);
+}
+
 async function updateProduct(id, product) {
   return await productRepository.updateProduct(id, product);
 }
@@ -30,4 +34,5 @@ export {
   getProductById,
   updateProduct,
   deleteProduct,
+  getProductByBarcode,
 };

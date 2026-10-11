@@ -43,6 +43,22 @@ async function getProductById(id) {
   return await response.json();
 }
 
+async function getProductByBarcode(barcode) {
+  const response = await fetch(
+    `${API_URL}/productos/barcode/${encodeURIComponent(barcode)}`,
+  );
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return null;
+    }
+
+    throw new Error("Error al buscar el producto");
+  }
+
+  return await response.json();
+}
+
 async function updateProduct(id, product) {
   const response = await fetch(`${API_URL}/productos/${id}`, {
     method: "PUT",
@@ -75,6 +91,7 @@ export {
   createProduct,
   getProducts,
   getProductById,
+  getProductByBarcode,
   updateProduct,
   deleteProduct,
 };

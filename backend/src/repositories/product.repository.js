@@ -263,10 +263,33 @@ async function deleteProduct(idProducto) {
   return result.rows[0];
 }
 
+async function getProductByBarcode(barcode) {
+  const query = `
+  SELECT
+  id_producto,
+  codigo_barras,
+  nombre,
+  precio_minorista,
+  precio_mayorista,
+  cantidad_min_mayorista,
+  imagen
+  FROM producto
+  WHERE
+  codigo_barras= $1
+  `;
+
+  const values = [barcode];
+
+  const result = await pool.query(query, values);
+
+  return result.rows[0];
+}
+
 export {
   createProduct,
   getProducts,
   getProductById,
   updateProduct,
   deleteProduct,
+  getProductByBarcode,
 };

@@ -92,7 +92,27 @@ async function getProductById(req, res) {
     });
   }
 }
+async function getProductByBarcode(req, res) {
+  try {
+    const barcode = req.params.barcode;
 
+    const product = await productService.getProductByBarcode(barcode);
+
+    if (!product) {
+      return res.status(404).json({
+        message: "Producto no encontrado",
+      });
+    }
+
+    return res.status(200).json(product);
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Error interno del servidor",
+    });
+  }
+}
 async function updateProduct(req, res) {
   try {
     const id = Number(req.params.id);
@@ -171,4 +191,5 @@ export {
   getProductById,
   updateProduct,
   deleteProduct,
+  getProductByBarcode,
 };
