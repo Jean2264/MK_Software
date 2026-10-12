@@ -27,6 +27,8 @@ SELECT *
 FROM subcategoria
 WHERE id_categoria = 4;
 
+
+
 CREATE TABLE producto (
     id_producto SERIAL PRIMARY KEY,
     codigo_producto VARCHAR(20) UNIQUE,
@@ -51,4 +53,22 @@ REFERENCES subcategoria(id_subcategoria);
 
 
 select * from producto
-delete from producto where nombre= 'MATE COCIDO MAROLIO 25 UN'
+delete from producto where codigo_producto= 'PRO00014'
+
+update producto 
+set estado=True
+
+SELECT
+    p.id_producto,
+    p.id_subcategoria AS id_subcategoria_producto,
+    s.id_subcategoria AS id_subcategoria_encontrada,
+    s.nombre AS nombre_subcategoria,
+    s.id_categoria AS id_categoria_de_subcategoria,
+    c.id_categoria AS id_categoria_encontrada,
+    c.nombre AS nombre_categoria
+FROM producto p
+LEFT JOIN subcategoria s
+    ON p.id_subcategoria = s.id_subcategoria
+LEFT JOIN categoria c
+    ON s.id_categoria = c.id_categoria
+WHERE p.id_producto = 15;
