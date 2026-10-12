@@ -71,6 +71,37 @@ async function getProducts(req, res) {
   }
 }
 
+async function searchProducts(req, res) {
+  try {
+    const { page = "1", limit = "10", search = "" } = req.query;
+
+    if (
+      !/^\d+$/.test(page) ||
+      !/^\d+$/.test(limit) ||
+      Number(page) < 1 ||
+      Number(limit) < 1
+    ) {
+      return res.status(400).json({
+        message: "Los parámetros page y limit deben ser enteros positivos.",
+      });
+    }
+
+    const products = await productService.searchProducts({
+      page,
+      limit,
+      search,
+    });
+
+    return res.status(200).json(products);
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Error al obtener productos.",
+    });
+  }
+}
+
 async function getProductById(req, res) {
   try {
     const id = Number(req.params.id);
@@ -188,6 +219,7 @@ async function deleteProduct(req, res) {
 export {
   createProduct,
   getProducts,
+  searchProducts,
   getProductById,
   updateProduct,
   deleteProduct,

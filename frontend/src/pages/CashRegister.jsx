@@ -2,6 +2,7 @@ import { useState } from "react";
 import SaleItemsTable from "../components/pos/SaleItemsTable";
 import SaleSummary from "../components/pos/SaleSummary";
 import "./CashRegister.css";
+import GlobalSearch from "../components/pos/GlobalSearch";
 
 function CashRegister() {
   const [products, setProducts] = useState([]);
@@ -43,7 +44,9 @@ function CashRegister() {
   }
   return (
     <main className="cash-register">
-      <header className="cash-register-header"></header>
+      <header className="cash-register-header">
+        <GlobalSearch />
+      </header>
       <section className="cash-register-content">
         <SaleItemsTable
           products={products}

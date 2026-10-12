@@ -12,6 +12,10 @@ async function getProducts(filters) {
   return products;
 }
 
+async function searchProducts(filters) {
+  return await productRepository.searchProducts(filters);
+}
+
 async function getProductById(id) {
   return await productRepository.getProductById(id);
 }
@@ -31,6 +35,7 @@ async function deleteProduct(id) {
 export {
   createProduct,
   getProducts,
+  searchProducts,
   getProductById,
   updateProduct,
   deleteProduct,

@@ -12,6 +12,7 @@ router.post(
 );
 
 router.get("/", productoController.getProducts);
+router.get("/search", productoController.searchProducts);
 router.get("/:id", productoController.getProductById);
 router.get("/barcode/:barcode", productoController.getProductByBarcode);
 

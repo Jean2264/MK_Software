@@ -29,6 +29,24 @@ async function getProducts(page = 1, search = "") {
   return await response.json();
 }
 
+async function searchProducts(search, page = 1, limit = 10) {
+  const params = new URLSearchParams({
+    search,
+    page: String(page),
+    limit: String(limit),
+  });
+
+  const response = await fetch(
+    `${API_URL}/products/search?${params.toString()}`,
+  );
+
+  if (!response.ok) {
+    throw new Error("Error al buscar productos");
+  }
+
+  return await response.json();
+}
+
 async function getProductById(id) {
   const response = await fetch(`${API_URL}/productos/${id}`, {
     method: "GET",
@@ -90,6 +108,7 @@ async function deleteProduct(id) {
 export {
   createProduct,
   getProducts,
+  searchProducts,
   getProductById,
   getProductByBarcode,
   updateProduct,

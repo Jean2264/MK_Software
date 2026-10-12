@@ -187,6 +187,79 @@ async function getProducts({
   };
 }
 
+async function searchProducts({ page = 1, limit = 10, search = "" }) {
+  // 1. Normalizar y validar los parámetros de paginación.
+  const currentPage = Math.max(1, Number.parseInt(page, 10) || 1);
+  const pageSize = Math.min(100, Math.max(1, Number.parseInt(limit, 10) || 10));
+
+  const offset = (currentPage - 1) * pageSize;
+
+  // 2. Construir las condiciones de búsqueda.
+  const conditions = ["p.estado = TRUE"];
+  const values = [];
+
+  const searchTerm = search.trim();
+
+  if (searchTerm !== "") {
+    values.push(`%${searchTerm}%`);
+
+    conditions.push(`
+      (
+        p.nombre ILIKE $${values.length}
+        OR p.codigo_producto ILIKE $${values.length}
+        OR p.codigo_barras ILIKE $${values.length}
+      )
+    `);
+  }
+
+  const whereClause = `WHERE ${conditions.join(" AND ")}`;
+
+  // 3. Obtener los productos de la página solicitada.
+  const dataQuery = `
+    SELECT
+      p.id_producto,
+      p.codigo_producto,
+      p.codigo_barras,
+      p.imagen,
+      p.nombre,
+      p.precio_minorista,
+      p.precio_mayorista,
+      p.cantidad_min_mayorista
+    FROM producto p
+    ${whereClause}
+    ORDER BY p.nombre ASC, p.id_producto ASC
+    LIMIT $${values.length + 1}
+    OFFSET $${values.length + 2};
+  `;
+
+  const dataValues = [...values, pageSize, offset];
+
+  const dataResult = await pool.query(dataQuery, dataValues);
+
+  // 4. Contar todas las coincidencias, no solo las de esta página.
+  const countQuery = `
+    SELECT COUNT(*) AS total
+    FROM producto p
+    ${whereClause};
+  `;
+
+  const countResult = await pool.query(countQuery, values);
+
+  const total = Number(countResult.rows[0].total);
+  const totalPages = Math.ceil(total / pageSize);
+
+  // 5. Devolver los productos y los metadatos de paginación.
+  return {
+    data: dataResult.rows,
+    pagination: {
+      page: currentPage,
+      limit: pageSize,
+      total,
+      totalPages,
+    },
+  };
+}
+
 async function getProductById(idProducto) {
   const query = `
     SELECT
@@ -288,6 +361,7 @@ async function getProductByBarcode(barcode) {
 export {
   createProduct,
   getProducts,
+  searchProducts,
   getProductById,
   updateProduct,
   deleteProduct,
