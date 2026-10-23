@@ -8,29 +8,37 @@ async function createProduct(product) {
 
     //1. creo producto sin codproducto
 
-    const insertQuery = `
-        INSERT INTO producto(
-        codigo_barras,
-        imagen,
-        nombre,
-        precio_minorista,
-        precio_mayorista,
-        cantidad_min_mayorista,
-        id_subcategoria
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-        RETURNING id_producto;
-        `;
+   const insertQuery = `
+  INSERT INTO producto (
+    codigo_barras,
+    imagen,
+    nombre,
+    costo,
+    margen_minorista,
+    precio_minorista,
+    margen_mayorista,
+    precio_mayorista,
+    cantidad_min_mayorista,
+    id_subcategoria,
+    id_marca
+  )
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+  RETURNING id_producto;
+`;
 
-    const insertValues = [
-      product.codigoBarras,
-      product.imagen,
-      product.nombre,
-      product.precioMinorista,
-      product.precioMayorista,
-      product.cantidadMinMayorista,
-      product.idSubcategoria,
-    ];
+const insertValues = [
+  product.codigoBarras,
+  product.imagen,
+  product.nombre,
+  product.costo,
+  product.margenMinorista,
+  product.precioMinorista,
+  product.margenMayorista,
+  product.precioMayorista,
+  product.cantidadMinMayorista,
+  product.idSubcategoria,
+  product.idMarca,
+];
 
     const insertResult = await client.query(insertQuery, insertValues);
 
